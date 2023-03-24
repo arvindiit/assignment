@@ -22,7 +22,7 @@ public class CustomerController {
     }
     
     @GetMapping("/customer")
-    public String searchCustomer(@ModelAttribute("customer") @Validated Customer customer, Model model) {
+    public String getCustomer(@ModelAttribute("customer") @Validated Customer customer, Model model) {
         model.addAttribute("searchedCustomer", customerService.fetchCustomer(customer.getId()));
         return ControllerHelper.setPage(model);
     }
