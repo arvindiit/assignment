@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset = "ISO-8859-1" />
+    <link href = "css/styles.css" rel = "stylesheet"/>
+    <title>Spring Boot Application</title>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+    </style>
+</head>
+<body>
+<div th:if="${error != null}">
+    <p style="font-size:20px; color: red" th:text="${error}"></p>
+</div>
+<div>
+    <h4>Create Customer</h4>
+    <form action="#" th:action="@{/customer/save}" th:object="${customer}" method="post">
+        <table border="0">
+            <tr>
+
+                <td>
+                    <label>First name:</label><br>
+                    <label>
+                        <input type="text" th:field="*{firstName}" />
+                    </label>
+                </td>
+                <td>
+                    <label>Last name:</label><br>
+                    <label>
+                        <input type="text" th:field="*{lastName}" />
+                    </label>
+                </td>
+                <td>
+                    <label>Age:</label><br>
+                    <label>
+                        <input type="number" min="10" max="80" th:field="*{age}" />
+                    </label>
+                </td>
+                <td>
+                    <input type="submit" value="Submit" />
+                </td>
+            </tr>
+        </table>
+        <p th:if="${savedCustomer != null}" th:text = "'Customer created with id(\'' + ${savedCustomer.id} + '\');'"></p>
+    </form>
+</div>
+<div>
+    <h4>Create Account</h4>
+    <form action="#" th:action="@{/account/save}" th:object="${newAccount}" method="post">
+        <table border="0">
+            <tr>
+
+                <td>
+                    <label>Customer Id:</label><br>
+                    <label>
+                        <input type="text" th:field="*{customerId}" />
+                    </label>
+                </td>
+                <td>
+                    <label>Initial Balance:</label><br>
+                    <label>
+                        <input type="number" min="1" th:field="*{balance}" />
+                    </label>
+                </td>
+                <td>
+                    <input type="submit" value="Submit" />
+                </td>
+            </tr>
+        </table>
+        <p th:if="${savedAccount != null}" th:text = "'Account created with id(\'' + ${savedAccount.id} + '\');'"></p>
+    </form>
+</div>
+<div>
+    <h4>Do Transaction</h4>
+    <form action="#" th:action="@{/account/transact}" th:object="${transact}" method="post">
+        <table border="0">
+            <tr>
+
+                <td>
+                    <label>Account Id:</label><br>
+                    <label>
+                        <input type="text" th:field="*{accountId}" />
+                    </label>
+                </td>
+                <td>
+                    <label>Amount:</label><br>
+                    <label>
+                        <input type="number" min="1"  th:field="*{balance}" />
+                    </label>
+                </td>
+                <td>
+                    <select th:field="*{debitCredit}">
+                        <option th:value="'DEBIT'" th:text="Debit"></option>
+                        <option th:value="'CREDIT'" th:text="Credit"></option>
+                    </select>
+                </td>
+                <td>
+                    <input type="submit" value="Submit" />
+                </td>
+            </tr>
+        </table>
+        <p th:if="${savedTransaction != null}" th:text = "'Transaction successful with id(\'' + ${savedTransaction.id} + '\');'"></p>
+    </form>
+</div>
+<div>
+    <h4>Search Customer</h4>
+    <form action="#" th:action="@{/customer}" th:object="${customer}" method="get">
+        <table border="0">
+            <tr>
+
+                <td>
+                    <label>Customer Id:</label><br>
+                    <label>
+                        <input type="text" th:field="*{id}" />
+                    </label>
+                </td>
+                <td>
+                    <input type="submit" value="Search" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<div th:if="${searchedCustomer.id != null}">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Account</th>
+
+        </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td th:text="${searchedCustomer.id}"></td>
+                <td th:text="${searchedCustomer.firstName}"></td>
+                <td th:text="${searchedCustomer.lastName}"></td>
+                <td><button th:onclick="showAccount([[${searchedCustomer}]])">Show</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div><table id = "account"></table></div>
+    <div><table id = "transaction"></table></div>
+</div>
+
+<script>
+    function showAccount(searchedCustomer) {
+        var element = document.getElementById("account");
+        var accounts = searchedCustomer.accounts;
+        if(accounts === null || accounts.length === 0){
+            element.innerHTML = "There is no account exists for customer id: "+searchedCustomer.id;
+        } else {
+            var account = accounts[0];
+            element.innerHTML= "<h5>Account</h5><form><table class=\"table\"><tr><td>Id</td><td>Balance</td><td>Transaction</td></tr><tr><td>"+account.id+"</td><td>"+account.balance+"</td>" +
+            "<td><button id = \"showTxBtn\" onclick='toggleTransaction()'>Show</button></td></tr></table></form>";
+            var element = document.getElementById("transaction");
+            //alert(account.balance);
+             var transactions = account.transactions;
+             if(transactions === null || transactions.length === 0){
+                 element.innerHTML = "There is no Transaction for account id: "+account.id;
+             } else {
+                 showTransaction(account);
+                 document.getElementById("transaction").style.display = "none";
+             }
+
+        }
+    }
+    function toggleTransaction(){
+        var element = document.getElementById("transaction");
+        var btn = document.getElementById("showTxBtn");
+        if(document.getElementById("transaction").style.display === "none"){
+            document.getElementById("transaction").style.display = "block";
+            btn.innerText = "Collapse";
+        } else {
+            document.getElementById("transaction").style.display = "none";
+            btn.innerText = "Show";
+        }
+    }
+    function showTransaction(account) {
+        let element = document.getElementById("transaction");
+        let transactions = account.transactions;
+        if(transactions === null || transactions.length === 0){
+            element.innerHTML = "There is no Transaction for account id: "+account.id;
+        } else {
+            let header = "<h5>Transaction</h5><form><table class=\"table\"><tr><td>Amount</td><td>Type</td><td>Time</td></tr>";
+            let html=header;
+            let i = 0;
+            while (i < transactions.length) {
+                let transaction = transactions[i];
+                html = html + "<tr><td>"+transaction.amount+"</td><td>"+transaction.transactionType+"</td><td>"+transaction.time+"</td></tr>";
+                i++;
+            }
+            html = html+ "</table></form>";
+            element.innerHTML = html;
+        }
+    }
+
+</script>
+</body>
+</html>
